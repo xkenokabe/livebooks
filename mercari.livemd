@@ -1,0 +1,85 @@
+# Mercari
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.10.0"},
+  {:number, "~> 1.0.1"}
+])
+```
+
+## Introduction
+
+This is the notebook to easily calculate how much actual profit you can make when setting initial price or changing price on [Mercari](https://jp.mercari.com/).
+
+## Simulation
+
+After evaluating all cells, feel free to change the inputs. Profits are calculated automatically. Profit values are to be appended to the frame so that they can be compared. Delivery fee shall be included in the item price.
+
+```elixir
+price = Kino.Input.number("Item Price", default: 300) |> Kino.render()
+
+delivery_fee =
+  Kino.Input.select(
+    "Delivery",
+    [
+      {210, "ネコポス"},
+      {520, "宅急便コンパクト(専用BOX代込み)"},
+      {750, "宅急便 - 60サイズ"},
+      {850, "宅急便 - 80サイズ"},
+      {1050, "宅急便 - 100サイズ"},
+      {1200, "宅急便 - 120サイズ"},
+      {1450, "宅急便 - 140サイズ"},
+      {1700, "宅急便 - 160サイズ"},
+      {230, "ゆうパケット"},
+      {280, "ゆうパケットポスト(専用BOX代込み)"},
+      {520, "ゆうパケットプラス(専用BOX代込み)"},
+      {770, "ゆうパック - 60サイズ"},
+      {870, "ゆうパック - 80サイズ"},
+      {1070, "ゆうパック - 100サイズ"},
+      {1200, "ゆうパック - 120サイズ"},
+      {1450, "ゆうパック - 140サイズ"},
+      {1700, "ゆうパック - 160サイズ"},
+      {1900, "ゆうパック - 170サイズ"},
+      {1700, "梱包・発送たのメル便 - 80サイズ"},
+      {2400, "梱包・発送たのメル便 - 120サイズ"},
+      {3400, "梱包・発送たのメル便 - 160サイズ"},
+      {5000, "梱包・発送たのメル便 - 200サイズ"},
+      {8600, "梱包・発送たのメル便 - 250サイズ"},
+      {12000, "梱包・発送たのメル便 - 300サイズ"},
+      {18500, "梱包・発送たのメル便 - 350サイズ"},
+      {25400, "梱包・発送たのメル便 - 400サイズ"},
+      {33000, "梱包・発送たのメル便 - 450サイズ"}
+    ],
+    default: 210
+  )
+  |> Kino.render()
+
+other_cost =
+  Kino.Input.number("Other cost (packaging materials, etc.)", default: 0) |> Kino.render()
+
+Kino.Markdown.new("**Profit**") |> Kino.render()
+clear = Kino.Control.button("Clear") |> Kino.render()
+frame = Kino.Frame.new() |> Kino.render()
+
+spawn(fn ->
+  for _ <- clear do
+    Kino.Frame.clear(frame)
+  end
+end)
+
+Kino.nothing()
+```
+
+<!-- livebook:{"reevaluate_automatically":true} -->
+
+```elixir
+profit =
+  price
+  |> Kino.Input.read()
+  |> Kernel.*(0.9)
+  |> Kernel.-(Kino.Input.read(delivery_fee))
+  |> Kernel.-(Kino.Input.read(other_cost))
+  |> Number.Delimit.number_to_delimited(precision: 0)
+
+Kino.Frame.append(frame, "#{profit}")
+```
